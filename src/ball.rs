@@ -84,6 +84,7 @@ impl Ball {
 }
 
 fn push_float(vec: &mut Vec<u8>, data: f32) {
+    let data = data * 100.0;
     vec.push(data.abs() as u8);
     vec.push((data.abs().fract() * 255.0) as u8);
     vec.push(((data.abs().fract() * 255.0).fract() * 255.0) as u8);

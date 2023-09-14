@@ -31,16 +31,14 @@ async fn main() {
             ..Default::default()
         },
     )
-    .unwrap();
+        .unwrap();
 
     let mut ball_count = 3;
     let mut world = World::new(ball_count);
     let mut fps = 0.0f32;
+    let mut speed = 1.0f32;
 
     loop {
-        let aspect = screen_width() / screen_height();
-        let dt = get_frame_time();
-
         if is_key_pressed(KeyCode::Space) {
             world.restart();
         }
@@ -52,8 +50,17 @@ async fn main() {
             ball_count = (ball_count - 1).max(1);
             world.change_count(ball_count);
         }
+        if is_key_pressed(KeyCode::Left) {
+            speed *= 0.9;
+        }
+        if is_key_pressed(KeyCode::Right) {
+            speed *= 1.1;
+        }
 
-        world.update(dt, aspect);
+        let aspect = screen_width() / screen_height();
+        let dt = get_frame_time();
+
+        world.update(dt * speed, aspect);
 
         let tex = world.make_texture();
 
@@ -77,14 +84,14 @@ async fn main() {
 
         fps = fps * 0.99 + dt * 0.01;
         draw_text(
-            &format!("FPS: {:.1} | BALLS: {}", 1.0 / fps, ball_count),
+            &format!("FPS: {:.1} | BALLS: {} | SPEED: {:.2}", 1.0 / fps, ball_count, speed),
             10.0,
             20.0,
             24.0,
             WHITE,
         );
         draw_text(
-            "PRESS SPACE TO RELOAD. UP TO INCREASE BALL AMOUNT. DOWN TO REDUCE BALL AMOUNT",
+            "PRESS SPACE TO RELOAD. UP/DOWN TO CHANGE BALL AMOUNT. LEFT/RIGHT TO CHANGE SPEED",
             10.0,
             screen_height() - 10.0,
             24.0,
