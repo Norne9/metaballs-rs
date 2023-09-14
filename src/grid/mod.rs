@@ -72,7 +72,7 @@ impl Grid {
 #[cfg(debug_assertions)]
 impl Grid {
     pub fn debug_draw(&self, aspect: f32) {
-        use crate::utils::*;
+        use crate::utils::dev::*;
         use macroquad::prelude::*;
 
         for cell in self.grid.values() {
@@ -83,7 +83,7 @@ impl Grid {
                     pos.y,
                     world_radius_to_screen(ball.radius),
                     2.0,
-                    if cell.len() > 1 { RED } else { GREEN },
+                    Color::from_vec(WHITE.to_vec().lerp(BLACK.to_vec(), cell.len() as f32 / 5.0)),
                 );
             }
         }

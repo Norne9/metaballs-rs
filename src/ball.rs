@@ -6,6 +6,7 @@ use macroquad::rand::gen_range;
 use crate::grid::{Grid, PhysicalObject};
 
 pub const MAX_RADIUS: f32 = 0.15;
+pub const BOUNCE_POWER: f32 = 5.0;
 
 #[derive(Copy, Clone, Default)]
 pub struct Ball {
@@ -79,11 +80,12 @@ impl Ball {
         }
     }
 
-    fn bounce_balls(self, grid: &Grid) -> Self {
+    fn bounce_balls(self, grid: &Grid, dt: f32) -> Self {
         let mut vel = self.vel;
         if let Some(other) = grid.test(self.pos, self.radius, Some(self.id)) {
             let delta = self.pos - other.position;
-            vel = delta.normalize() * vel.length();
+            vel = Vec2::lerp(vel.normalize(), delta.normalize(), dt * BOUNCE_POWER).normalize()
+                * vel.length();
         }
         Self { vel, ..self }
     }
@@ -91,7 +93,7 @@ impl Ball {
     pub fn update(self, grid: &Grid, dt: f32, aspect: f32) -> Self {
         self.update_position(dt)
             .bounce_walls(aspect)
-            .bounce_balls(grid)
+            .bounce_balls(grid, dt)
     }
 }
 

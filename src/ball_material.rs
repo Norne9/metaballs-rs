@@ -24,8 +24,6 @@ impl BallMaterial {
 
     pub fn apply(&self, aspect: f32) {
         gl_use_material(&self.material);
-        self.material
-            .set_uniform("ballCount", self.ball_count as i32);
         self.material.set_uniform("aspect", aspect);
     }
 }
