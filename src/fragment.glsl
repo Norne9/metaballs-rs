@@ -21,11 +21,11 @@ MetaBall decodeBall(int index) {
     MetaBall b;
     highp float y = (float(index) + 0.5) / float(ballCount);
     highp vec4 color = texture2D(Texture, vec2(0.5 / 4.0, y));
-    b.pos.x = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 100.0;
+    b.pos.x = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 20.0;
     color = texture2D(Texture, vec2(1.5 / 4.0, y));
-    b.pos.y = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 100.0;
+    b.pos.y = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 20.0;
     color = texture2D(Texture, vec2(2.5 / 4.0, y));
-    b.r = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 100.0;
+    b.r = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 20.0;
     b.col = texture2D(Texture, vec2(3.5 / 4.0, y)).rgb;
     return b;
 }

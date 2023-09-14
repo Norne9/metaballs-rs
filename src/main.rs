@@ -1,3 +1,5 @@
+use std::ops::Not;
+
 use macroquad::prelude::*;
 use macroquad::window::miniquad::*;
 
@@ -8,9 +10,107 @@ mod world;
 
 #[macroquad::main("Metaballs")]
 async fn main() {
-    request_new_screen_size(1280.0, 720.0);
+    let mat = create_material();
+    let mut world = World::new(3);
+    let mut fps = 0.0f32;
+    let mut show_hud = true;
 
-    let mat = load_material(
+    loop {
+        let dt = get_frame_time();
+        world.aspect = screen_width() / screen_height();
+
+        process_input(&mut world, &mut show_hud);
+
+        world.update(dt);
+        draw_world(&world, &mat);
+
+        fps = fps * 0.99 + dt * 0.01;
+        if show_hud {
+            draw_ui(&world, fps);
+        }
+
+        next_frame().await
+    }
+}
+
+fn draw_ui(world: &World, fps: f32) {
+    draw_text(
+        &format!(
+            "FPS: {:.1} | BALLS: {} | SPEED: {:.2}",
+            1.0 / fps,
+            world.len(),
+            world.speed
+        ),
+        10.0,
+        20.0,
+        24.0,
+        WHITE,
+    );
+    draw_text(
+        "Press SPACE to reload. LMB/RMB to add/remove balls.",
+        10.0,
+        screen_height() - 30.0,
+        24.0,
+        WHITE,
+    );
+    draw_text(
+        "MOUSE WHEEL to change speed. SHIFT to toggle hud.",
+        10.0,
+        screen_height() - 10.0,
+        24.0,
+        WHITE,
+    );
+}
+
+fn draw_world(world: &World, material: &Material) {
+    if world.len() == 0 {
+        clear_background(BLACK);
+        return;
+    }
+
+    let tex = world.make_texture();
+
+    gl_use_material(material);
+    material.set_uniform("aspect", world.aspect);
+    material.set_uniform("ballCount", world.len() as i32);
+
+    draw_texture_ex(
+        &tex,
+        0.0,
+        0.0,
+        WHITE,
+        DrawTextureParams {
+            dest_size: Some(vec2(screen_width(), screen_height())),
+            source: None,
+            ..Default::default()
+        },
+    );
+
+    gl_use_default_material();
+}
+
+fn process_input(world: &mut World, show_hud: &mut bool) {
+    if is_key_pressed(KeyCode::LeftShift) {
+        *show_hud = show_hud.not();
+    }
+    if is_key_pressed(KeyCode::Space) {
+        world.restart();
+    }
+
+    let wheel = mouse_wheel().1;
+    world.speed += world.speed * 0.0003 * wheel;
+
+    let pos = mouse_position_local() * vec2(1.0, -1.0);
+    if is_mouse_button_pressed(MouseButton::Left) {
+        world.add_ball(pos);
+    }
+    if is_mouse_button_pressed(MouseButton::Right) {
+        world.remove_ball(pos);
+    }
+}
+
+fn create_material() -> Material {
+    load_material(
         ShaderSource::Glsl {
             vertex: include_str!("vertex.glsl"),
             fragment: include_str!("fragment.glsl"),
@@ -31,73 +131,5 @@ async fn main() {
             ..Default::default()
         },
     )
-        .unwrap();
-
-    let mut ball_count = 3;
-    let mut world = World::new(ball_count);
-    let mut fps = 0.0f32;
-    let mut speed = 1.0f32;
-
-    loop {
-        if is_key_pressed(KeyCode::Space) {
-            world.restart();
-        }
-        if is_key_pressed(KeyCode::Up) {
-            ball_count += 1;
-            world.change_count(ball_count);
-        }
-        if is_key_pressed(KeyCode::Down) {
-            ball_count = (ball_count - 1).max(1);
-            world.change_count(ball_count);
-        }
-        if is_key_pressed(KeyCode::Left) {
-            speed *= 0.9;
-        }
-        if is_key_pressed(KeyCode::Right) {
-            speed *= 1.1;
-        }
-
-        let aspect = screen_width() / screen_height();
-        let dt = get_frame_time();
-
-        world.update(dt * speed, aspect);
-
-        let tex = world.make_texture();
-
-        gl_use_material(&mat);
-        mat.set_uniform("aspect", aspect);
-        mat.set_uniform("ballCount", world.len() as i32);
-
-        draw_texture_ex(
-            &tex,
-            0.0,
-            0.0,
-            WHITE,
-            DrawTextureParams {
-                dest_size: Some(vec2(screen_width(), screen_height())),
-                source: None,
-                ..Default::default()
-            },
-        );
-
-        gl_use_default_material();
-
-        fps = fps * 0.99 + dt * 0.01;
-        draw_text(
-            &format!("FPS: {:.1} | BALLS: {} | SPEED: {:.2}", 1.0 / fps, ball_count, speed),
-            10.0,
-            20.0,
-            24.0,
-            WHITE,
-        );
-        draw_text(
-            "PRESS SPACE TO RELOAD. UP/DOWN TO CHANGE BALL AMOUNT. LEFT/RIGHT TO CHANGE SPEED",
-            10.0,
-            screen_height() - 10.0,
-            24.0,
-            WHITE,
-        );
-
-        next_frame().await
-    }
+        .unwrap()
 }

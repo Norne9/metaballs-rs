@@ -1,3 +1,6 @@
+use std::mem;
+
+use macroquad::math::Vec2;
 use macroquad::texture::{FilterMode, Texture2D};
 
 use crate::ball::Ball;
@@ -5,6 +8,8 @@ use crate::ball::Ball;
 pub struct World {
     balls: Vec<Ball>,
     temp: Vec<Ball>,
+    pub speed: f32,
+    pub aspect: f32,
 }
 
 impl World {
@@ -16,16 +21,22 @@ impl World {
         Self {
             balls,
             temp: Vec::with_capacity(ball_count),
+            speed: 1.0,
+            aspect: 1.0,
         }
     }
 
-    pub fn update(&mut self, dt: f32, aspect: f32) {
+    pub fn update(&mut self, dt: f32) {
         self.temp.clear();
         for (i, ball) in self.balls.iter().enumerate() {
-            self.temp.push(ball.update(&self.balls, i, dt, aspect));
+            if !ball.alive {
+                continue;
+            }
+            self.temp
+                .push(ball.update(&self.balls, i, dt * self.speed, self.aspect));
         }
-        self.balls.clear();
-        self.balls.extend(&self.temp);
+
+        mem::swap(&mut self.balls, &mut self.temp);
     }
 
     pub fn make_texture(&self) -> Texture2D {
@@ -43,20 +54,27 @@ impl World {
         self.balls.len()
     }
 
-    pub fn change_count(&mut self, new_count: usize) {
-        while self.balls.len() < new_count {
-            self.balls.push(Ball::new());
-        }
-        while self.balls.len() > new_count {
-            self.balls.pop();
-        }
-    }
-
     pub fn restart(&mut self) {
         let count = self.balls.len();
         self.balls.clear();
         for _ in 0..count {
             self.balls.push(Ball::new());
+        }
+    }
+
+    pub fn add_ball(&mut self, position: Vec2) {
+        let pos = position * Vec2::new(self.aspect, 1.0);
+        let mut ball = Ball::new();
+        ball.pos = pos;
+        self.balls.push(ball);
+    }
+
+    pub fn remove_ball(&mut self, position: Vec2) {
+        let pos = position * Vec2::new(self.aspect, 1.0);
+        for ball in self.balls.iter_mut() {
+            if ball.is_point_inside(pos, 0.0) {
+                ball.alive = false;
+            }
         }
     }
 }

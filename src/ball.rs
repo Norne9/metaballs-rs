@@ -7,6 +7,7 @@ pub struct Ball {
     pub vel: Vec2,
     pub color: Color,
     pub radius: f32,
+    pub alive: bool,
 }
 
 impl Ball {
@@ -20,6 +21,7 @@ impl Ball {
             vel: vec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)).normalize() * gen_range(0.3, 0.8),
             radius,
             color: hsv_to_rgb(gen_range(0.0, 360.0), 1.0, 1.0),
+            alive: true,
         }
     }
 
@@ -65,11 +67,7 @@ impl Ball {
                 continue;
             }
             let delta = self.pos - others[j].pos;
-            let dist2 = delta.dot(delta);
-            let rad2 = self.radius + others[j].radius;
-            let rad2 = rad2 * rad2;
-
-            if dist2 < rad2 {
+            if self.check_collision(delta, others[j].radius) {
                 vel = delta.normalize() * vel.length();
             }
         }
@@ -81,10 +79,22 @@ impl Ball {
             .bounce_walls(aspect)
             .bounce_balls(others, my_index)
     }
+
+    pub fn is_point_inside(&self, point: Vec2, radius: f32) -> bool {
+        let delta = self.pos - point;
+        self.check_collision(delta, radius)
+    }
+
+    fn check_collision(&self, delta: Vec2, radius: f32) -> bool {
+        let dist2 = delta.dot(delta);
+        let rad2 = self.radius + radius;
+        let rad2 = rad2 * rad2;
+        dist2 < rad2
+    }
 }
 
 fn push_float(vec: &mut Vec<u8>, data: f32) {
-    let data = data * 100.0;
+    let data = data * 20.0;
     vec.push(data.abs() as u8);
     vec.push((data.abs().fract() * 255.0) as u8);
     vec.push(((data.abs().fract() * 255.0).fract() * 255.0) as u8);
