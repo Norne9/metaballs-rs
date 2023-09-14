@@ -7,9 +7,11 @@ use crate::world::World;
 
 mod ball;
 mod ball_material;
+mod grid;
+mod utils;
 mod world;
 
-const START_BALL_COUNT: usize = 3;
+const START_BALL_COUNT: usize = 5;
 
 #[macroquad::main("Metaballs")]
 async fn main() {
@@ -27,6 +29,9 @@ async fn main() {
         world.update(dt);
         mat.update_ball_count(world.len());
         draw_world(&world, &mat);
+
+        #[cfg(debug_assertions)]
+        world.debug_draw();
 
         fps = fps * 0.99 + dt * 0.01;
         if show_hud {

@@ -1,8 +1,15 @@
+use std::cmp::Ordering;
+
 use macroquad::prelude::*;
 use macroquad::rand::gen_range;
 
-#[derive(Copy, Clone)]
+use crate::grid::{Grid, PhysicalObject};
+
+pub const MAX_RADIUS: f32 = 0.15;
+
+#[derive(Copy, Clone, Default)]
 pub struct Ball {
+    id: usize,
     pub pos: Vec2,
     pub vel: Vec2,
     pub color: Color,
@@ -11,9 +18,10 @@ pub struct Ball {
 }
 
 impl Ball {
-    pub fn new() -> Self {
-        let radius = gen_range(0.05f32, 0.15f32);
+    pub fn new(id: usize) -> Self {
+        let radius = gen_range(0.05f32, MAX_RADIUS);
         Self {
+            id,
             pos: vec2(
                 gen_range(-1.0 + radius, 1.0 - radius),
                 gen_range(-1.0 + radius, 1.0 - radius),
@@ -22,6 +30,13 @@ impl Ball {
             radius,
             color: hsv_to_rgb(gen_range(0.0, 360.0), 1.0, 1.0),
             alive: true,
+        }
+    }
+
+    pub fn only_id(id: usize) -> Self {
+        Self {
+            id,
+            ..Default::default()
         }
     }
 
@@ -36,14 +51,14 @@ impl Ball {
         bytes.push((self.color.a * 255.0) as u8);
     }
 
-    fn update_position(&self, dt: f32) -> Self {
+    fn update_position(self, dt: f32) -> Self {
         Self {
             pos: self.pos + self.vel * dt,
-            ..*self
+            ..self
         }
     }
 
-    fn bounce_walls(&self, aspect: f32) -> Self {
+    fn bounce_walls(self, aspect: f32) -> Self {
         let mut vel = self.vel;
         if self.pos.x + self.radius > aspect {
             vel.x = -vel.x.abs();
@@ -57,39 +72,60 @@ impl Ball {
         if self.pos.y - self.radius < -1.0 {
             vel.y = vel.y.abs();
         }
-        Self { vel, ..*self }
-    }
-
-    fn bounce_balls(&self, others: &[Ball], my_index: usize) -> Self {
-        let mut vel = self.vel;
-        for j in 0..others.len() {
-            if my_index == j {
-                continue;
-            }
-            let delta = self.pos - others[j].pos;
-            if self.check_collision(delta, others[j].radius) {
-                vel = delta.normalize() * vel.length();
-            }
+        Self {
+            vel,
+            pos: self.pos.max(vec2(-aspect, -1.0)).min(vec2(aspect, 1.0)),
+            ..self
         }
-        Self { vel, ..*self }
     }
 
-    pub fn update(self, others: &[Ball], my_index: usize, dt: f32, aspect: f32) -> Self {
+    fn bounce_balls(self, grid: &Grid) -> Self {
+        let mut vel = self.vel;
+        if let Some(other) = grid.test(self.pos, self.radius, Some(self.id)) {
+            let delta = self.pos - other.position;
+            vel = delta.normalize() * vel.length();
+        }
+        Self { vel, ..self }
+    }
+
+    pub fn update(self, grid: &Grid, dt: f32, aspect: f32) -> Self {
         self.update_position(dt)
             .bounce_walls(aspect)
-            .bounce_balls(others, my_index)
+            .bounce_balls(grid)
+    }
+}
+
+impl PhysicalObject for Ball {
+    fn id(&self) -> usize {
+        self.id
     }
 
-    pub fn is_point_inside(&self, point: Vec2, radius: f32) -> bool {
-        let delta = self.pos - point;
-        self.check_collision(delta, radius)
+    fn radius(&self) -> f32 {
+        self.radius
     }
 
-    fn check_collision(&self, delta: Vec2, radius: f32) -> bool {
-        let dist2 = delta.dot(delta);
-        let rad2 = self.radius + radius;
-        let rad2 = rad2 * rad2;
-        dist2 < rad2
+    fn position(&self) -> Vec2 {
+        self.pos
+    }
+}
+
+impl Eq for Ball {}
+
+impl PartialEq<Self> for Ball {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl PartialOrd<Self> for Ball {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.id.partial_cmp(&other.id)
+    }
+}
+
+impl Ord for Ball {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.id.cmp(&other.id)
     }
 }
 
