@@ -1,17 +1,20 @@
 use std::ops::Not;
 
 use macroquad::prelude::*;
-use macroquad::window::miniquad::*;
 
+use crate::ball_material::BallMaterial;
 use crate::world::World;
 
 mod ball;
+mod ball_material;
 mod world;
+
+const START_BALL_COUNT: usize = 3;
 
 #[macroquad::main("Metaballs")]
 async fn main() {
-    let mat = create_material();
-    let mut world = World::new(3);
+    let mut mat = BallMaterial::new(START_BALL_COUNT);
+    let mut world = World::new(START_BALL_COUNT);
     let mut fps = 0.0f32;
     let mut show_hud = true;
 
@@ -22,6 +25,7 @@ async fn main() {
         process_input(&mut world, &mut show_hud);
 
         world.update(dt);
+        mat.update_ball_count(world.len());
         draw_world(&world, &mat);
 
         fps = fps * 0.99 + dt * 0.01;
@@ -62,7 +66,7 @@ fn draw_ui(world: &World, fps: f32) {
     );
 }
 
-fn draw_world(world: &World, material: &Material) {
+fn draw_world(world: &World, material: &BallMaterial) {
     if world.len() == 0 {
         clear_background(BLACK);
         return;
@@ -70,9 +74,7 @@ fn draw_world(world: &World, material: &Material) {
 
     let tex = world.make_texture();
 
-    gl_use_material(material);
-    material.set_uniform("aspect", world.aspect);
-    material.set_uniform("ballCount", world.len() as i32);
+    material.apply(world.aspect);
 
     draw_texture_ex(
         &tex,
@@ -94,7 +96,7 @@ fn process_input(world: &mut World, show_hud: &mut bool) {
         *show_hud = show_hud.not();
     }
     if is_key_pressed(KeyCode::Space) {
-        world.restart();
+        world.restart(START_BALL_COUNT);
     }
 
     let wheel = mouse_wheel().1;
@@ -107,29 +109,4 @@ fn process_input(world: &mut World, show_hud: &mut bool) {
     if is_mouse_button_pressed(MouseButton::Right) {
         world.remove_ball(pos);
     }
-}
-
-fn create_material() -> Material {
-    load_material(
-        ShaderSource::Glsl {
-            vertex: include_str!("vertex.glsl"),
-            fragment: include_str!("fragment.glsl"),
-        },
-        MaterialParams {
-            uniforms: vec![
-                ("aspect".to_string(), UniformType::Float1),
-                ("ballCount".to_string(), UniformType::Int1),
-            ],
-            pipeline_params: PipelineParams {
-                color_blend: Some(BlendState::new(
-                    Equation::Add,
-                    BlendFactor::Value(BlendValue::SourceAlpha),
-                    BlendFactor::OneMinusValue(BlendValue::SourceAlpha),
-                )),
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-    )
-        .unwrap()
 }

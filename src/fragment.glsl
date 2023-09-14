@@ -1,4 +1,3 @@
-#version 100
 varying highp vec2 uv;
 
 uniform sampler2D Texture;
@@ -33,7 +32,7 @@ MetaBall decodeBall(int index) {
 highp vec3 renderMetaBall(highp vec2 uv) {
     highp float total = 0.0;
     highp vec3 color = vec3(0.0);
-    for (int i = 0; i < ballCount; i++) {
+    for (int i = 0; i < BALL_COUNT; i++) {
         MetaBall b = decodeBall(i);
         highp vec4 bd = BallSDF(b, uv);
         total += bd.a;

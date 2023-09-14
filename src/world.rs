@@ -54,10 +54,9 @@ impl World {
         self.balls.len()
     }
 
-    pub fn restart(&mut self) {
-        let count = self.balls.len();
+    pub fn restart(&mut self, ball_count: usize) {
         self.balls.clear();
-        for _ in 0..count {
+        for _ in 0..ball_count {
             self.balls.push(Ball::new());
         }
     }
