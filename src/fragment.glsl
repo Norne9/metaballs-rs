@@ -13,6 +13,7 @@ struct MetaBall {
 
 highp vec4 BallSDF(MetaBall ball, highp vec2 uv) {
     highp float dst = ball.r / length(uv - ball.pos);
+    dst *= dst;
     return vec4(ball.col * dst, dst);
 }
 
@@ -44,7 +45,7 @@ highp vec3 renderMetaBall(highp vec2 uv) {
     }
     if (total < 1.0) {
         color = pow(color, vec3(0.5));
-        color *= total / 4.0;
+        color *= total * 0.6;
     }
     return color;
 }

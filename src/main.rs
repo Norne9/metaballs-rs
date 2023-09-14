@@ -31,7 +31,7 @@ async fn main() {
             ..Default::default()
         },
     )
-        .unwrap();
+    .unwrap();
 
     let mut ball_count = 3;
     let mut world = World::new(ball_count);
@@ -76,8 +76,20 @@ async fn main() {
         gl_use_default_material();
 
         fps = fps * 0.99 + dt * 0.01;
-        draw_text(&format!("FPS: {:.1} | BALLS: {}", 1.0 / fps, ball_count), 10.0, 20.0, 24.0, WHITE);
-        draw_text("PRESS SPACE TO RELOAD. UP TO INCREASE BALL AMOUNT. DOWN TO REDUCE BALL AMOUNT", 10.0, screen_height() - 10.0, 24.0, WHITE);
+        draw_text(
+            &format!("FPS: {:.1} | BALLS: {}", 1.0 / fps, ball_count),
+            10.0,
+            20.0,
+            24.0,
+            WHITE,
+        );
+        draw_text(
+            "PRESS SPACE TO RELOAD. UP TO INCREASE BALL AMOUNT. DOWN TO REDUCE BALL AMOUNT",
+            10.0,
+            screen_height() - 10.0,
+            24.0,
+            WHITE,
+        );
 
         next_frame().await
     }

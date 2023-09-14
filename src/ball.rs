@@ -55,10 +55,7 @@ impl Ball {
         if self.pos.y - self.radius < -1.0 {
             vel.y = vel.y.abs();
         }
-        Self {
-            vel,
-            ..*self
-        }
+        Self { vel, ..*self }
     }
 
     fn bounce_balls(&self, others: &[Ball], my_index: usize) -> Self {
@@ -76,14 +73,13 @@ impl Ball {
                 vel = delta.normalize() * vel.length();
             }
         }
-        Self {
-            vel,
-            ..*self
-        }
+        Self { vel, ..*self }
     }
 
     pub fn update(self, others: &[Ball], my_index: usize, dt: f32, aspect: f32) -> Self {
-        self.update_position(dt).bounce_walls(aspect).bounce_balls(others, my_index)
+        self.update_position(dt)
+            .bounce_walls(aspect)
+            .bounce_balls(others, my_index)
     }
 }
 
