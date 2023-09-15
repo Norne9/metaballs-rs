@@ -10,6 +10,7 @@ pub struct World {
     last_id: usize,
     balls: BTreeMap<usize, Ball>,
     grid: Grid,
+    start_ball_count: usize,
     pub speed: f32,
     pub aspect: f32,
 }
@@ -20,10 +21,11 @@ impl World {
             last_id: ball_count,
             balls: BTreeMap::new(),
             grid: Grid::new(MAX_RADIUS),
+            start_ball_count: ball_count,
             speed: 1.0,
             aspect: 1.0,
         };
-        world.restart(ball_count);
+        world.restart();
         world
     }
 
@@ -49,12 +51,12 @@ impl World {
         self.balls.len()
     }
 
-    pub fn restart(&mut self, ball_count: usize) {
+    pub fn restart(&mut self) {
         self.balls.clear();
-        for id in 0..ball_count {
+        for id in 0..self.start_ball_count {
             self.add_bal(Ball::new(id));
         }
-        self.last_id = ball_count;
+        self.last_id = self.start_ball_count;
     }
 
     pub fn add_ball(&mut self, position: Vec2) {
@@ -77,7 +79,6 @@ impl World {
     }
 }
 
-#[cfg(debug_assertions)]
 impl World {
     pub fn debug_draw(&self) {
         self.grid.debug_draw(self.aspect);

@@ -41,17 +41,15 @@ fn create_sdf_material(ball_count: usize) -> Material {
 #define BALL_COUNT {}
 {}"#,
         ball_count,
-        include_str!("sdf.glsl")
+        include_str!("shaders/sdf.glsl")
     );
     load_material(
         ShaderSource::Glsl {
-            vertex: include_str!("vertex.glsl"),
+            vertex: include_str!("shaders/vertex.glsl"),
             fragment: &fragment,
         },
         MaterialParams {
-            uniforms: vec![
-                ("aspect".to_string(), UniformType::Float1),
-            ],
+            uniforms: vec![("aspect".to_string(), UniformType::Float1)],
             pipeline_params: PipelineParams {
                 color_blend: None,
                 ..Default::default()
@@ -59,19 +57,17 @@ fn create_sdf_material(ball_count: usize) -> Material {
             ..Default::default()
         },
     )
-        .unwrap()
+    .unwrap()
 }
 
 fn create_post_material() -> Material {
     load_material(
         ShaderSource::Glsl {
-            vertex: include_str!("vertex.glsl"),
-            fragment: include_str!("draw.glsl"),
+            vertex: include_str!("shaders/vertex.glsl"),
+            fragment: include_str!("shaders/draw.glsl"),
         },
         MaterialParams {
-            uniforms: vec![
-                ("resolution".to_string(), UniformType::Float2),
-            ],
+            uniforms: vec![("resolution".to_string(), UniformType::Float2)],
             pipeline_params: PipelineParams {
                 color_blend: None,
                 ..Default::default()
@@ -79,5 +75,5 @@ fn create_post_material() -> Material {
             ..Default::default()
         },
     )
-        .unwrap()
+    .unwrap()
 }

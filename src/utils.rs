@@ -16,8 +16,7 @@ impl PushFloat for Vec<u8> {
     }
 }
 
-#[cfg(debug_assertions)]
-pub mod dev {
+pub mod debug {
     use macroquad::prelude::*;
 
     pub fn world_to_screen(pos: Vec2, aspect: f32) -> Vec2 {

@@ -34,7 +34,7 @@ impl Grid {
         }
     }
 
-    pub fn update<'a, Item: PhysicalObject + 'a, Container: IntoIterator<Item=&'a Item>>(
+    pub fn update<'a, Item: PhysicalObject + 'a, Container: IntoIterator<Item = &'a Item>>(
         &mut self,
         objects: Container,
     ) {
@@ -69,10 +69,9 @@ impl Grid {
     }
 }
 
-#[cfg(debug_assertions)]
 impl Grid {
     pub fn debug_draw(&self, aspect: f32) {
-        use crate::utils::dev::*;
+        use crate::utils::debug::*;
         use macroquad::prelude::*;
 
         for cell in self.grid.values() {

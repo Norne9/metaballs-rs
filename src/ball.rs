@@ -65,7 +65,8 @@ impl Ball {
     fn bounce_balls(&mut self, grid: &Grid, dt: f32) -> &mut Self {
         if let Some(other) = grid.test(self.pos, self.radius, Some(self.id)) {
             let delta = self.pos - other.position;
-            self.vel = Vec2::lerp(self.vel.normalize(), delta.normalize(), dt * BOUNCE_POWER).normalize()
+            self.vel = Vec2::lerp(self.vel.normalize(), delta.normalize(), dt * BOUNCE_POWER)
+                .normalize()
                 * self.vel.length();
         }
         self

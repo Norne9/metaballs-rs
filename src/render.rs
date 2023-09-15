@@ -56,7 +56,12 @@ impl Render {
     fn render_sdf(&mut self, world: &World) {
         set_camera(&Camera2D {
             render_target: Some(self.small_sdf.clone()),
-            ..Camera2D::from_display_rect(Rect::new(0.0, 0.0, self.small_sdf.texture.width(), self.small_sdf.texture.height()))
+            ..Camera2D::from_display_rect(Rect::new(
+                0.0,
+                0.0,
+                self.small_sdf.texture.width(),
+                self.small_sdf.texture.height(),
+            ))
         });
 
         let tex = world.make_texture();
