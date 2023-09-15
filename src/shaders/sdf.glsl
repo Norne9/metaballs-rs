@@ -1,3 +1,5 @@
+#define DSP_STR 1.5
+
 varying highp vec2 uv;
 
 uniform sampler2D Texture;
@@ -15,12 +17,12 @@ highp float BallSDF(MetaBall ball, highp vec2 uv) {
 }
 
 highp float CalcAlpha(highp float dst) {
-    dst = pow(dst, 5.5);
+    dst = pow(dst, 3.0);
     return dst > 1.0 ? 2.0 : dst;
 }
 
 highp vec2 CalcColor(MetaBall ball, highp float dst) {
-    return vec2(ball.col, pow(dst, 5.5));
+    return vec2(ball.col, dst > 1.0 ? pow(dst, 3.0) : dst);
 }
 
 MetaBall decodeBall(int index) {
@@ -37,23 +39,42 @@ MetaBall decodeBall(int index) {
     return b;
 }
 
-highp vec3 rgb2hsv(highp vec3 c)
-{
-    highp vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
-    highp vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
-    highp vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
-
-    highp float d = q.x - min(q.w, q.y);
-    highp float e = 1.0e-10;
-    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
-}
-
 highp vec3 hsv2rgb(highp vec3 c)
 {
     highp vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
     highp vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
+
+highp float getsat(highp vec3 c)
+{
+    highp float mi = min(min(c.x, c.y), c.z);
+    highp float ma = max(max(c.x, c.y), c.z);
+    return (ma - mi)/(ma+ 1e-7);
+}
+
+//Improved rgb lerp
+highp vec3 iLerp(highp vec3 a, highp vec3 b, highp float x)
+{
+    //Interpolated base color (with singularity fix)
+    highp vec3 ic = mix(a, b, x) + vec3(1e-6, 0., 0.);
+
+    //Saturation difference from ideal scenario
+    highp float sd = abs(getsat(ic) - mix(getsat(a), getsat(b), x));
+
+    //Displacement direction
+    highp vec3 dir = normalize(vec3(2.*ic.x - ic.y - ic.z, 2.*ic.y - ic.x - ic.z, 2.*ic.z - ic.y - ic.x));
+    //Simple Lighntess
+    highp float lgt = dot(vec3(1.0), ic);
+
+    //Extra scaling factor for the displacement
+    highp float ff = dot(dir, normalize(ic));
+
+    //Displace the color
+    ic += DSP_STR*dir*sd*ff*lgt;
+    return clamp(ic, 0., 1.);
+}
+
 
 highp vec4 renderMetaBall(highp vec2 uv) {
     highp float total = 0.0;
@@ -69,13 +90,13 @@ highp vec4 renderMetaBall(highp vec2 uv) {
 
         highp vec2 ha = CalcColor(b, dst);
         total_rgba += ha.y;
-        color += hsv2rgb(vec3(ha.x, 1.0, 1.0)) * ha.y;
+        color = iLerp(color, hsv2rgb(vec3(ha.x, 1.0, 1.0)), ha.y / total_rgba);
+        //color += hsv2rgb(vec3(ha.x, 1.0, 1.0)) * ha.y;
+
     }
-    color /= total_rgba;
+    //color /= total_rgba;
 
-    highp vec3 colorRgb = hsv2rgb(vec3(rgb2hsv(color).x, 1.0, 1.0));
-
-    //total = smoothstep(0.0, 1.0, (total - 0.9) / 0.45);
+    highp vec3 colorRgb = color;
 
     return vec4(colorRgb, total);
 }
