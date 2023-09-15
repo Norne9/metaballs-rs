@@ -14,7 +14,15 @@ mod world;
 
 const START_BALL_COUNT: usize = 5;
 
-#[macroquad::main("Metaballs")]
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "Metaballs".to_owned(),
+        high_dpi: true,
+        ..Default::default()
+    }
+}
+
+#[macroquad::main(window_conf)]
 async fn main() {
     let mut world = World::new(START_BALL_COUNT);
     let mut renderer = Render::new(START_BALL_COUNT);
