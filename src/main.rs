@@ -17,7 +17,7 @@ const START_BALL_COUNT: usize = 5;
 fn window_conf() -> Conf {
     Conf {
         window_title: "Metaballs".to_owned(),
-        high_dpi: true,
+        high_dpi: false,
         ..Default::default()
     }
 }
