@@ -81,9 +81,13 @@ impl Grid {
                 draw_circle_lines(
                     pos.x,
                     pos.y,
-                    world_radius_to_screen(ball.radius),
-                    2.0,
-                    Color::from_vec(WHITE.to_vec().lerp(BLACK.to_vec(), cell.len() as f32 / 5.0)),
+                    world_radius_to_screen(ball.radius) - 4.0,
+                    4.0,
+                    Color::from_vec(
+                        WHITE
+                            .to_vec()
+                            .lerp(BLACK.to_vec(), (cell.len() - 1) as f32 / 3.0),
+                    ),
                 );
             }
         }

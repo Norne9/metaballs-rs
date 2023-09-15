@@ -9,10 +9,17 @@ struct MetaBall {
     highp vec3 col;
 };
 
-highp vec4 BallSDF(MetaBall ball, highp vec2 uv) {
-    highp float dst = ball.r / length(uv - ball.pos);
+highp float BallSDF(MetaBall ball, highp vec2 uv) {
+    return ball.r / length(uv - ball.pos);
+}
+
+highp float CalcAlpha(highp float dst) {
     dst = pow(dst, 1.5);
-    return vec4(ball.col * dst, dst > 1.0 ? 2.0 : dst);
+    return dst > 1.0 ? 2.0 : dst;
+}
+
+highp vec4 CalcColor(MetaBall ball, highp float dst) {
+    return vec4(ball.col, pow(dst, 2.0));
 }
 
 MetaBall decodeBall(int index) {
@@ -30,22 +37,29 @@ MetaBall decodeBall(int index) {
 
 highp vec4 renderMetaBall(highp vec2 uv) {
     highp float total = 0.0;
+    highp float total_rgba = 0.0;
     highp vec3 color = vec3(0.0);
+
     for (int i = 0; i < BALL_COUNT; i++) {
         MetaBall b = decodeBall(i);
-        highp vec4 bd = BallSDF(b, uv);
-        total += bd.a;
-        color += bd.rgb;
-    }
-    total = smoothstep(0.0, 1.0, (total - 0.2) / 1.3);
+        highp float dst = BallSDF(b, uv);
 
-    if (length(color) > 1.0) {
-        color = normalize(color);
+        highp float a = CalcAlpha(dst);
+        total += a;
+
+        highp vec4 rgba = CalcColor(b, dst);
+        total_rgba += rgba.a;
+        color = mix(color, rgba.rgb, rgba.a / total_rgba);
     }
+
+    total = smoothstep(0.0, 1.0, (total - 0.5) / 1.3);
+    total = pow(total, 4.0);
+
     color *= total;
-    if (total < 0.99) {
+    if (total < 1.0) {
         color *= 0.5;
     }
+
     return vec4(color, total);
 }
 
