@@ -70,17 +70,17 @@ impl Grid {
 }
 
 impl Grid {
-    pub fn debug_draw(&self, aspect: f32) {
+    pub fn debug_draw(&self, aspect: f32, zoom: f32) {
         use crate::utils::debug::*;
         use macroquad::prelude::*;
 
         for cell in self.grid.values() {
             for ball in cell {
-                let pos = world_to_screen(ball.position, aspect);
+                let pos = world_to_screen(ball.position, aspect, zoom);
                 draw_circle_lines(
                     pos.x,
                     pos.y,
-                    world_radius_to_screen(ball.radius),
+                    world_radius_to_screen(ball.radius, zoom),
                     1.0,
                     Color::from_vec(
                         WHITE

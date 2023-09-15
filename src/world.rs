@@ -87,6 +87,6 @@ impl World {
 
 impl World {
     pub fn debug_draw(&self) {
-        self.grid.debug_draw(self.aspect);
+        self.grid.debug_draw(self.aspect, self.zoom);
     }
 }
