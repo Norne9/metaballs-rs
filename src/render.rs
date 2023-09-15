@@ -67,7 +67,7 @@ impl Render {
         let tex = world.make_texture();
 
         self.material.update_ball_count(world.len());
-        self.material.apply_sdf(world.aspect);
+        self.material.apply_sdf(world.aspect, world.zoom);
 
         draw_texture_ex(
             &tex,

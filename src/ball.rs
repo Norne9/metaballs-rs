@@ -24,8 +24,8 @@ impl Ball {
         Self {
             id,
             pos: vec2(
-                gen_range(-1.0 + radius, 1.0 - radius),
-                gen_range(-1.0 + radius, 1.0 - radius),
+                gen_range(-0.2 + radius, 0.2 - radius),
+                gen_range(-0.2 + radius, 0.2 - radius),
             ),
             vel: vec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)).normalize() * gen_range(0.1, 0.6),
             radius,
@@ -45,20 +45,21 @@ impl Ball {
         self
     }
 
-    fn bounce_walls(&mut self, aspect: f32) -> &mut Self {
+    fn bounce_walls(&mut self, aspect: f32, zoom: f32) -> &mut Self {
+        let aspect = aspect * zoom;
         if self.pos.x + self.radius > aspect {
             self.vel.x = -self.vel.x.abs();
         }
         if self.pos.x - self.radius < -aspect {
             self.vel.x = self.vel.x.abs();
         }
-        if self.pos.y + self.radius > 1.0 {
+        if self.pos.y + self.radius > zoom {
             self.vel.y = -self.vel.y.abs();
         }
-        if self.pos.y - self.radius < -1.0 {
+        if self.pos.y - self.radius < -zoom {
             self.vel.y = self.vel.y.abs();
         }
-        self.pos = self.pos.max(vec2(-aspect, -1.0)).min(vec2(aspect, 1.0));
+        self.pos = self.pos.max(vec2(-aspect, -zoom)).min(vec2(aspect, zoom));
         self
     }
 
@@ -72,9 +73,9 @@ impl Ball {
         self
     }
 
-    pub fn update(&mut self, grid: &Grid, dt: f32, aspect: f32) {
+    pub fn update(&mut self, grid: &Grid, dt: f32, aspect: f32, zoom: f32) {
         self.update_position(dt)
-            .bounce_walls(aspect)
+            .bounce_walls(aspect, zoom)
             .bounce_balls(grid, dt);
     }
 }

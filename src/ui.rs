@@ -49,12 +49,15 @@ impl Gui {
             return;
         }
 
-        widgets::Window::new(hash!(), vec2(30., 30.), vec2(340., 185.))
+        widgets::Window::new(hash!(), vec2(30., 30.), vec2(340., 205.))
             .label("Settings")
             .titlebar(true)
             .ui(&mut *root_ui(), |ui| {
                 ui.label(None, &format!("Ball count: {}", world.len()));
                 ui.slider(hash!(), "World speed", 0.1f32..3.0f32, &mut world.speed);
+                let mut zoom = 1.0 / world.zoom;
+                ui.slider(hash!(), "Zoom", 0.5f32..2.0f32, &mut zoom);
+                world.zoom = 1.0 / zoom;
                 ui.separator();
 
                 ui.combo_box(

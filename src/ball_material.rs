@@ -23,9 +23,10 @@ impl BallMaterial {
         self.ball_count = ball_count;
     }
 
-    pub fn apply_sdf(&self, aspect: f32) {
+    pub fn apply_sdf(&self, aspect: f32, zoom: f32) {
         gl_use_material(&self.sdf_material);
         self.sdf_material.set_uniform("aspect", aspect);
+        self.sdf_material.set_uniform("zoom", zoom);
     }
 
     pub fn apply_post(&self, size: Vec2) {
@@ -49,7 +50,10 @@ fn create_sdf_material(ball_count: usize) -> Material {
             fragment: &fragment,
         },
         MaterialParams {
-            uniforms: vec![("aspect".to_string(), UniformType::Float1)],
+            uniforms: vec![
+                ("aspect".to_string(), UniformType::Float1),
+                ("zoom".to_string(), UniformType::Float1),
+            ],
             pipeline_params: PipelineParams {
                 color_blend: None,
                 ..Default::default()

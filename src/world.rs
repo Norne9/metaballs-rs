@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use macroquad::math::Vec2;
+use macroquad::math::{vec2, Vec2};
 use macroquad::texture::{FilterMode, Texture2D};
 
 use crate::ball::{Ball, MAX_RADIUS};
@@ -13,6 +13,7 @@ pub struct World {
     start_ball_count: usize,
     pub speed: f32,
     pub aspect: f32,
+    pub zoom: f32,
 }
 
 impl World {
@@ -24,6 +25,7 @@ impl World {
             start_ball_count: ball_count,
             speed: 1.0,
             aspect: 1.0,
+            zoom: 1.0,
         };
         world.restart();
         world
@@ -32,7 +34,7 @@ impl World {
     pub fn update(&mut self, dt: f32) {
         self.grid.update(self.balls.values());
         for ball in self.balls.values_mut() {
-            ball.update(&self.grid, dt * self.speed, self.aspect);
+            ball.update(&self.grid, dt * self.speed, self.aspect, self.zoom);
         }
     }
 
@@ -60,7 +62,7 @@ impl World {
     }
 
     pub fn add_ball(&mut self, position: Vec2) {
-        let pos = position * Vec2::new(self.aspect, 1.0);
+        let pos = self.mouse_to_world(position);
         let mut ball = Ball::new(self.last_id);
         self.last_id += 1;
         ball.pos = pos;
@@ -68,7 +70,7 @@ impl World {
     }
 
     pub fn remove_ball(&mut self, position: Vec2) {
-        let pos = position * Vec2::new(self.aspect, 1.0);
+        let pos = self.mouse_to_world(position);
         if let Some(hit) = self.grid.test(pos, 0.0, None) {
             self.balls.remove(&hit.id);
         }
@@ -76,6 +78,10 @@ impl World {
 
     fn add_bal(&mut self, ball: Ball) {
         self.balls.insert(ball.id(), ball);
+    }
+
+    fn mouse_to_world(&self, position: Vec2) -> Vec2 {
+        position * Vec2::new(self.aspect, 1.0) * vec2(self.zoom, self.zoom)
     }
 }
 

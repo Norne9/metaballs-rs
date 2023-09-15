@@ -2,6 +2,7 @@ varying highp vec2 uv;
 
 uniform sampler2D Texture;
 uniform highp float aspect;
+uniform highp float zoom;
 
 struct MetaBall {
     highp float r;
@@ -26,13 +27,13 @@ MetaBall decodeBall(int index) {
     MetaBall b;
     highp float y = (float(index) + 0.5) / float(BALL_COUNT);
     highp vec4 color = texture2D(Texture, vec2(0.5 / 4.0, y));
-    b.pos.x = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 20.0;
+    b.pos.x = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 10.0;
     color = texture2D(Texture, vec2(1.5 / 4.0, y));
-    b.pos.y = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 20.0;
+    b.pos.y = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 10.0;
     color = texture2D(Texture, vec2(2.5 / 4.0, y));
-    b.r = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 20.0;
+    b.r = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 10.0;
     color = texture2D(Texture, vec2(3.5 / 4.0, y));
-    b.col = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 20.0;
+    b.col = (color.r * 255.0 + color.g + color.b / 255.0) * (color.a * 2.0 - 1.0) / 10.0;
     return b;
 }
 
@@ -81,7 +82,7 @@ highp vec4 renderMetaBall(highp vec2 uv) {
 
 void main() {
     highp vec2 nuw = vec2(uv.x, 1.0 - uv.y) * 2.0 - 1.0;
-    nuw *= vec2(aspect, 1.0);
+    nuw *= vec2(aspect, 1.0) * zoom;
     highp vec4 col = renderMetaBall(nuw);
     gl_FragColor = col;
 }

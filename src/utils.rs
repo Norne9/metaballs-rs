@@ -4,7 +4,7 @@ pub trait PushFloat {
 
 impl PushFloat for Vec<u8> {
     fn push_float(&mut self, value: f32) {
-        let value = value * 20.0;
+        let value = value * 10.0;
         self.push(value.abs() as u8);
         self.push((value.abs().fract() * 255.0) as u8);
         self.push(((value.abs().fract() * 255.0).fract() * 255.0) as u8);
