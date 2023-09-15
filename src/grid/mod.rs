@@ -34,7 +34,7 @@ impl Grid {
         }
     }
 
-    pub fn update<'a, Item: PhysicalObject + 'a, Container: IntoIterator<Item = &'a Item>>(
+    pub fn update<'a, Item: PhysicalObject + 'a, Container: IntoIterator<Item=&'a Item>>(
         &mut self,
         objects: Container,
     ) {
@@ -81,8 +81,8 @@ impl Grid {
                 draw_circle_lines(
                     pos.x,
                     pos.y,
-                    world_radius_to_screen(ball.radius) - 4.0,
-                    4.0,
+                    world_radius_to_screen(ball.radius),
+                    1.0,
                     Color::from_vec(
                         WHITE
                             .to_vec()

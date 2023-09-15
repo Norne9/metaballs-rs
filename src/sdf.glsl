@@ -55,10 +55,11 @@ highp vec4 renderMetaBall(highp vec2 uv) {
     total = smoothstep(0.0, 1.0, (total - 0.5) / 1.3);
     total = pow(total, 4.0);
 
+    /*
     color *= total;
     if (total < 1.0) {
         color *= 0.5;
-    }
+    }*/
 
     return vec4(color, total);
 }
@@ -68,5 +69,6 @@ void main() {
     nuw *= vec2(aspect, 1.0);
     highp vec4 col = renderMetaBall(nuw);
     //gl_FragColor = vec4(vec3(col.a), 1.0);
-    gl_FragColor = vec4(col.rgb, 1.0);
+    //gl_FragColor = vec4(col.rgb, 1.0);
+    gl_FragColor = col;
 }

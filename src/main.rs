@@ -2,7 +2,7 @@ use std::ops::Not;
 
 use macroquad::prelude::*;
 
-use crate::ball_material::BallMaterial;
+use crate::render::Render;
 use crate::world::World;
 
 mod ball;
@@ -10,13 +10,14 @@ mod ball_material;
 mod grid;
 mod utils;
 mod world;
+mod render;
 
 const START_BALL_COUNT: usize = 5;
 
 #[macroquad::main("Metaballs")]
 async fn main() {
-    let mut mat = BallMaterial::new(START_BALL_COUNT);
     let mut world = World::new(START_BALL_COUNT);
+    let mut renderer = Render::new(START_BALL_COUNT);
     let mut fps = 0.0f32;
     let mut show_hud = true;
 
@@ -27,8 +28,8 @@ async fn main() {
         process_input(&mut world, &mut show_hud);
 
         world.update(dt);
-        mat.update_ball_count(world.len());
-        draw_world(&world, &mat);
+
+        renderer.render(&world);
 
         #[cfg(debug_assertions)]
         world.debug_draw();
@@ -69,31 +70,6 @@ fn draw_ui(world: &World, fps: f32) {
         24.0,
         WHITE,
     );
-}
-
-fn draw_world(world: &World, material: &BallMaterial) {
-    if world.len() == 0 {
-        clear_background(BLACK);
-        return;
-    }
-
-    let tex = world.make_texture();
-
-    material.apply(world.aspect);
-
-    draw_texture_ex(
-        &tex,
-        0.0,
-        0.0,
-        WHITE,
-        DrawTextureParams {
-            dest_size: Some(vec2(screen_width(), screen_height())),
-            source: None,
-            ..Default::default()
-        },
-    );
-
-    gl_use_default_material();
 }
 
 fn process_input(world: &mut World, show_hud: &mut bool) {
