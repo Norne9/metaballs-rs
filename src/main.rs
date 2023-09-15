@@ -21,7 +21,7 @@ async fn main() {
     let mut gui = Gui::new();
 
     loop {
-        let dt = get_frame_time();
+        let dt = get_frame_time().min(0.1);
 
         world.aspect = screen_width() / screen_height();
         world.update(dt);

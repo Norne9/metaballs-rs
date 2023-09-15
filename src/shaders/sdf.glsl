@@ -14,12 +14,12 @@ highp float BallSDF(MetaBall ball, highp vec2 uv) {
 }
 
 highp float CalcAlpha(highp float dst) {
-    dst = pow(dst, 1.5);
+    dst = pow(dst, 5.5);
     return dst > 1.0 ? 2.0 : dst;
 }
 
 highp vec2 CalcColor(MetaBall ball, highp float dst) {
-    return vec2(ball.col, pow(dst, 10.0));
+    return vec2(ball.col, pow(dst, 5.5));
 }
 
 MetaBall decodeBall(int index) {
@@ -74,7 +74,7 @@ highp vec4 renderMetaBall(highp vec2 uv) {
 
     highp vec3 colorRgb = hsv2rgb(vec3(rgb2hsv(color).x, 1.0, 1.0));
 
-    total = smoothstep(0.0, 1.0, (total - 0.9) / 0.45);
+    //total = smoothstep(0.0, 1.0, (total - 0.9) / 0.45);
 
     return vec4(colorRgb, total);
 }
