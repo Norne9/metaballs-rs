@@ -15,7 +15,6 @@ pub struct Ball {
     pub vel: Vec2,
     pub color: Color,
     pub radius: f32,
-    pub alive: bool,
 }
 
 impl Ball {
@@ -30,14 +29,6 @@ impl Ball {
             vel: vec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)).normalize() * gen_range(0.3, 0.8),
             radius,
             color: hsv_to_rgb(gen_range(0.0, 360.0), 1.0, 1.0),
-            alive: true,
-        }
-    }
-
-    pub fn only_id(id: usize) -> Self {
-        Self {
-            id,
-            ..Default::default()
         }
     }
 
@@ -52,48 +43,41 @@ impl Ball {
         bytes.push((self.color.a * 255.0) as u8);
     }
 
-    fn update_position(self, dt: f32) -> Self {
-        Self {
-            pos: self.pos + self.vel * dt,
-            ..self
-        }
+    fn update_position(&mut self, dt: f32) -> &mut Self {
+        self.pos += self.vel * dt;
+        self
     }
 
-    fn bounce_walls(self, aspect: f32) -> Self {
-        let mut vel = self.vel;
+    fn bounce_walls(&mut self, aspect: f32) -> &mut Self {
         if self.pos.x + self.radius > aspect {
-            vel.x = -vel.x.abs();
+            self.vel.x = -self.vel.x.abs();
         }
         if self.pos.x - self.radius < -aspect {
-            vel.x = vel.x.abs();
+            self.vel.x = self.vel.x.abs();
         }
         if self.pos.y + self.radius > 1.0 {
-            vel.y = -vel.y.abs();
+            self.vel.y = -self.vel.y.abs();
         }
         if self.pos.y - self.radius < -1.0 {
-            vel.y = vel.y.abs();
+            self.vel.y = self.vel.y.abs();
         }
-        Self {
-            vel,
-            pos: self.pos.max(vec2(-aspect, -1.0)).min(vec2(aspect, 1.0)),
-            ..self
-        }
+        self.pos = self.pos.max(vec2(-aspect, -1.0)).min(vec2(aspect, 1.0));
+        self
     }
 
-    fn bounce_balls(self, grid: &Grid, dt: f32) -> Self {
-        let mut vel = self.vel;
+    fn bounce_balls(&mut self, grid: &Grid, dt: f32) -> &mut Self {
         if let Some(other) = grid.test(self.pos, self.radius, Some(self.id)) {
             let delta = self.pos - other.position;
-            vel = Vec2::lerp(vel.normalize(), delta.normalize(), dt * BOUNCE_POWER).normalize()
-                * vel.length();
+            self.vel = Vec2::lerp(self.vel.normalize(), delta.normalize(), dt * BOUNCE_POWER).normalize()
+                * self.vel.length();
         }
-        Self { vel, ..self }
+        self
     }
 
-    pub fn update(self, grid: &Grid, dt: f32, aspect: f32) -> Self {
+    pub fn update(&mut self, grid: &Grid, dt: f32, aspect: f32) {
         self.update_position(dt)
             .bounce_walls(aspect)
-            .bounce_balls(grid, dt)
+            .bounce_balls(grid, dt);
     }
 }
 

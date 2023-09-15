@@ -1,16 +1,14 @@
-use std::collections::BTreeSet;
-use std::mem;
+use std::collections::BTreeMap;
 
 use macroquad::math::Vec2;
 use macroquad::texture::{FilterMode, Texture2D};
 
 use crate::ball::{Ball, MAX_RADIUS};
-use crate::grid::Grid;
+use crate::grid::{Grid, PhysicalObject};
 
 pub struct World {
     last_id: usize,
-    balls: BTreeSet<Ball>,
-    temp: BTreeSet<Ball>,
+    balls: BTreeMap<usize, Ball>,
     grid: Grid,
     pub speed: f32,
     pub aspect: f32,
@@ -20,8 +18,7 @@ impl World {
     pub fn new(ball_count: usize) -> Self {
         let mut world = Self {
             last_id: ball_count,
-            balls: BTreeSet::new(),
-            temp: BTreeSet::new(),
+            balls: BTreeMap::new(),
             grid: Grid::new(MAX_RADIUS),
             speed: 1.0,
             aspect: 1.0,
@@ -31,20 +28,15 @@ impl World {
     }
 
     pub fn update(&mut self, dt: f32) {
-        self.temp.clear();
-        self.grid.update(&self.balls);
-        self.temp.extend(
-            self.balls
-                .iter()
-                .filter(|b| b.alive)
-                .map(|b| b.update(&self.grid, dt * self.speed, self.aspect)),
-        );
-        mem::swap(&mut self.balls, &mut self.temp);
+        self.grid.update(self.balls.values());
+        for ball in self.balls.values_mut() {
+            ball.update(&self.grid, dt * self.speed, self.aspect);
+        }
     }
 
     pub fn make_texture(&self) -> Texture2D {
         let mut bytes: Vec<u8> = vec![];
-        for ball in &self.balls {
+        for ball in self.balls.values() {
             ball.add_to_image(&mut bytes);
         }
 
@@ -60,7 +52,7 @@ impl World {
     pub fn restart(&mut self, ball_count: usize) {
         self.balls.clear();
         for id in 0..ball_count {
-            self.balls.insert(Ball::new(id));
+            self.add_bal(Ball::new(id));
         }
         self.last_id = ball_count;
     }
@@ -70,14 +62,18 @@ impl World {
         let mut ball = Ball::new(self.last_id);
         self.last_id += 1;
         ball.pos = pos;
-        self.balls.insert(ball);
+        self.add_bal(ball);
     }
 
     pub fn remove_ball(&mut self, position: Vec2) {
         let pos = position * Vec2::new(self.aspect, 1.0);
         if let Some(hit) = self.grid.test(pos, 0.0, None) {
-            self.balls.remove(&Ball::only_id(hit.id));
+            self.balls.remove(&hit.id);
         }
+    }
+
+    fn add_bal(&mut self, ball: Ball) {
+        self.balls.insert(ball.id(), ball);
     }
 }
 

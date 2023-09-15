@@ -90,6 +90,5 @@ impl Render {
 
 fn render_target_scaled(size: Vec2) -> RenderTarget {
     let internal_size = size.clamp_length_max(MAX_RENDER_SIZE);
-    println!("{:?}", internal_size);
     render_target(internal_size.x as u32, internal_size.y as u32)
 }
