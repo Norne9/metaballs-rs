@@ -1,3 +1,21 @@
+pub trait PushFloat {
+    fn push_float(&mut self, value: f32);
+}
+
+impl PushFloat for Vec<u8> {
+    fn push_float(&mut self, value: f32) {
+        let value = value * 20.0;
+        self.push(value.abs() as u8);
+        self.push((value.abs().fract() * 255.0) as u8);
+        self.push(((value.abs().fract() * 255.0).fract() * 255.0) as u8);
+        if value < 0.0 {
+            self.push(0u8)
+        } else {
+            self.push(255u8)
+        }
+    }
+}
+
 #[cfg(debug_assertions)]
 pub mod dev {
     use macroquad::prelude::*;

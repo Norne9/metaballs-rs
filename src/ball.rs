@@ -4,6 +4,7 @@ use macroquad::prelude::*;
 use macroquad::rand::gen_range;
 
 use crate::grid::{Grid, PhysicalObject};
+use crate::utils::PushFloat;
 
 pub const MAX_RADIUS: f32 = 0.15;
 pub const BOUNCE_POWER: f32 = 5.0;
@@ -13,7 +14,7 @@ pub struct Ball {
     id: usize,
     pub pos: Vec2,
     pub vel: Vec2,
-    pub color: Color,
+    pub color: f32,
     pub radius: f32,
 }
 
@@ -26,21 +27,17 @@ impl Ball {
                 gen_range(-1.0 + radius, 1.0 - radius),
                 gen_range(-1.0 + radius, 1.0 - radius),
             ),
-            vel: vec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)).normalize() * gen_range(0.3, 0.8),
+            vel: vec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)).normalize() * gen_range(0.1, 0.6),
             radius,
-            color: hsv_to_rgb(gen_range(0.0, 360.0), 1.0, 1.0),
+            color: gen_range(0.0, 1.0),
         }
     }
 
     pub fn add_to_image(&self, bytes: &mut Vec<u8>) {
-        let mut bytes = bytes;
-        push_float(&mut bytes, self.pos.x);
-        push_float(&mut bytes, self.pos.y);
-        push_float(&mut bytes, self.radius);
-        bytes.push((self.color.r * 255.0) as u8);
-        bytes.push((self.color.g * 255.0) as u8);
-        bytes.push((self.color.b * 255.0) as u8);
-        bytes.push((self.color.a * 255.0) as u8);
+        bytes.push_float(self.pos.x);
+        bytes.push_float(self.pos.y);
+        bytes.push_float(self.radius);
+        bytes.push_float(self.color);
     }
 
     fn update_position(&mut self, dt: f32) -> &mut Self {
@@ -112,45 +109,5 @@ impl PartialOrd<Self> for Ball {
 impl Ord for Ball {
     fn cmp(&self, other: &Self) -> Ordering {
         self.id.cmp(&other.id)
-    }
-}
-
-fn push_float(vec: &mut Vec<u8>, data: f32) {
-    let data = data * 20.0;
-    vec.push(data.abs() as u8);
-    vec.push((data.abs().fract() * 255.0) as u8);
-    vec.push(((data.abs().fract() * 255.0).fract() * 255.0) as u8);
-    if data < 0.0 {
-        vec.push(0u8)
-    } else {
-        vec.push(255u8)
-    }
-}
-
-fn hsv_to_rgb(h: f32, s: f32, v: f32) -> Color {
-    let c = v * s;
-    let h_prime = h / 60.0;
-    let x = c * (1.0 - (h_prime % 2.0 - 1.0).abs());
-    let m = v - c;
-
-    let (r, g, b) = if h_prime < 1.0 {
-        (c, x, 0.0)
-    } else if h_prime < 2.0 {
-        (x, c, 0.0)
-    } else if h_prime < 3.0 {
-        (0.0, c, x)
-    } else if h_prime < 4.0 {
-        (0.0, x, c)
-    } else if h_prime < 5.0 {
-        (x, 0.0, c)
-    } else {
-        (c, 0.0, x)
-    };
-
-    Color {
-        r: r + m,
-        g: g + m,
-        b: b + m,
-        a: 1.0, // Alpha is set to 1.0 for full opacity
     }
 }

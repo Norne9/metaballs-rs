@@ -15,12 +15,12 @@ void main() {
     // Pixel colour
     highp vec4 blur = texture2D(Texture, uv);
 
+
     // Blur calculations
     for (highp float d = 0.0; d < Pi; d += Pi / Directions)
     {
         blur += texture2D(Texture, uv + vec2(cos(d), sin(d))*Radius);
     }
-
     // Output to screen
     blur /= Directions;
 
