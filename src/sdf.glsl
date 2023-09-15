@@ -52,8 +52,11 @@ highp vec4 renderMetaBall(highp vec2 uv) {
         color = mix(color, rgba.rgb, rgba.a / total_rgba);
     }
 
-    total = smoothstep(0.0, 1.0, (total - 0.5) / 1.3);
-    total = pow(total, 4.0);
+    //total = smoothstep(0.0, 1.0, (total - 0.5) / 1.3);
+    //total = pow(total, 2.0);
+
+    total = smoothstep(0.0, 1.0, (total - 0.9) / 0.45);
+    //total = mix_factor;
 
     /*
     color *= total;

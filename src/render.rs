@@ -3,7 +3,7 @@ use macroquad::prelude::*;
 use crate::ball_material::BallMaterial;
 use crate::world::World;
 
-const MAX_RENDER_SIZE: f32 = 1024.0;
+const MAX_RENDER_SIZE: f32 = 768.0;
 
 pub struct Render {
     material: BallMaterial,
